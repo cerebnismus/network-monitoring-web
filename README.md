@@ -1,3 +1,3 @@
 ##### Network Monitoring - Web User Interface
 
-Restarting with typescript
+Restarting with Solara
