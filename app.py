@@ -12,6 +12,8 @@ from types import ModuleType
 from time import sleep
 from typing import Any, Dict, Optional, cast
 
+from typing import Union # confirmation dialog - just trying
+
 import plotly
 import numpy as np
 import pandas as pd
@@ -20,6 +22,8 @@ from matplotlib import pyplot as plt
 
 import solara
 import solara.lab
+from solara.lab import headers, cookies
+from solara.lab.components.confirmation_dialog import ConfirmationDialog # - still trying
 import solara.express as solara_px  # similar to plotly express, but comes with cross filters
 
 from solara.components.columns import Columns
@@ -90,6 +94,14 @@ class State:
         State.df.value = None
 
 
+# user setting popup
+open_setting_confirmation = solara.reactive(False)
+
+def setting_user():
+    # put your code to perform the action here
+    print("User being entered setting popup...")
+
+
 @solara.component
 def UserCards():
     assert auth is not None
@@ -120,7 +132,10 @@ def UserCards():
                                 auth.Avatar()
 
                         with v.CardActions():
-                            solara.Button("User Settings", icon_name="mdi-account-cog", text=True)
+                            solara.Button(label="Settings", icon_name="mdi-account-cog", on_click=lambda: open_setting_confirmation.set(True))
+                            solara.lab.ConfirmationDialog(open_setting_confirmation, ok="Save", on_ok=setting_user, content="Be careful when editing user settings.")
+
+
                             solara.Button("logout", icon_name="mdi-logout", href=auth.get_logout_url(), text=True)
         else:
             solara.Error("No user info")
@@ -229,6 +244,8 @@ def Layout(children):
 
 
 
+
+
 @solara.component
 def Page():
     ############################ META ###########################
@@ -247,7 +264,9 @@ def Page():
     with solara.AppBar():
         solara.lab.ThemeToggle()
         if auth.user.value:
-            auth.AvatarMenu()
+            with auth.AvatarMenu():
+                solara.Button("Settings", icon_name="mdi-account-cog", text=True)
+                solara.Button("Logout", icon_name="mdi-logout", href=auth.get_logout_url(), text=True)
         else:
             solara.Button(icon_name="mdi-login", href=auth.get_login_url(), icon=True)
 
@@ -263,9 +282,14 @@ def Page():
                         """ 
                         ##### We use the `picture` field to display an avatar in the [AppBar](/documentation/components/layout/app_bar). 
                         *Note: do not share this data with anyone, it contains sensitive information.*
-                    """
+                        """
                     )
+                    solara.Preformatted(pprint.pformat(headers.value['user-agent']))
+                    solara.Markdown(f" ")
+                    solara.Preformatted(pprint.pformat(cookies.value))
+                    solara.Markdown(f" ")
                     solara.Preformatted(pprint.pformat(auth.user.value))
+
         else:
             solara.Markdown(
                 """
